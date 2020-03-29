@@ -49,8 +49,13 @@ class RootContext:
         client_tls = tls.is_tls_record_magic(d)
 
         # 1. check for filter
-        if self.config.check_filter:
-            is_filtered = self.config.check_filter(top_layer.server_conn.address)
+        trusted = tuple(["origin.com","notion.so","battlelog.com","eaassets-a.akamaihd.net",".ea.com",".epicgames.com",".dice.se"])
+        skipped_url = ""
+        
+        if True: #self.config.check_filter:
+            is_filtered = self.config.check_filter(top_layer.server_conn.address) or top_layer.server_conn.address[0].endswith(trusted)
+            skipped_url = top_layer.server_conn.address[0];
+            
             if not is_filtered and client_tls:
                 try:
                     client_hello = tls.ClientHello.from_file(self.client_conn.rfile)
@@ -58,11 +63,12 @@ class RootContext:
                     self.log("Cannot parse Client Hello: %s" % repr(e), "error")
                 else:
                     sni_str = client_hello.sni and client_hello.sni.decode("idna")
-                    is_filtered = self.config.check_filter((sni_str, 443))
+                    is_filtered = self.config.check_filter((sni_str, 443)) or sni_str.endswith(trusted)
+                    skipped_url = sni_str;
             if is_filtered:
+                print("####### Yoni skip: " + skipped_url);
                 return protocol.RawTCPLayer(top_layer, ignore=True)
-
-
+                
         # 2. Always insert a TLS layer, even if there's neither client nor server tls.
         # An inline script may upgrade from http to https,
         # in which case we need some form of TLS layer.
