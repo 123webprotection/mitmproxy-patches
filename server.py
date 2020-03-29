@@ -123,6 +123,7 @@ class ConnectionHandler:
             self.log("Connection killed", "info")
         except exceptions.ProtocolException as e:
             if isinstance(e, exceptions.ClientHandshakeException):
+                ## TODO: Block log (anyway map\enforce)
                 self.log(
                     "Client Handshake failed. "
                     "The client may not trust the proxy's certificate for {}.".format(e.server),
