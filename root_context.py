@@ -50,12 +50,15 @@ class RootContext:
         client_tls = tls.is_tls_record_magic(d)
 
         # 1. check for filter
-        trusted = tuple(["origin.com","notion.so","battlelog.com","eaassets-a.akamaihd.net",".ea.com",".epicgames.com",".dice.se"])
         skipped_url = ""
+        is_filtered = False
         
         if True: #self.config.check_filter:
-            is_filtered = self.config.check_filter(top_layer.server_conn.address) or top_layer.server_conn.address[0].endswith(trusted)
-            skipped_url = top_layer.server_conn.address[0];
+            is_filtered = ( self.config.check_filter(top_layer.server_conn.address) 
+                          or 
+                          selfc.SelfCShared.isTrusted(top_layer.server_conn.address[0]) )
+            if is_filtered:
+                skipped_url = top_layer.server_conn.address[0];
             
             if not is_filtered and client_tls:
                 try:
@@ -64,10 +67,11 @@ class RootContext:
                     self.log("Cannot parse Client Hello: %s" % repr(e), "error")
                 else:
                     sni_str = client_hello.sni and client_hello.sni.decode("idna")
-                    is_filtered = self.config.check_filter((sni_str, 443)) or sni_str.endswith(trusted)
-                    skipped_url = sni_str;
+                    is_filtered = self.config.check_filter((sni_str, 443)) or selfc.SelfCShared.isTrusted(sni_str)
+                    if is_filtered:
+                        skipped_url = sni_str;
             if is_filtered:
-                print("####### Yoni skip: " + skipped_url);
+                print("####### MITM Skip, Trusted: " + skipped_url);
                 return protocol.RawTCPLayer(top_layer, ignore=True)
                 
         # 2. Always insert a TLS layer, even if there's neither client nor server tls.
