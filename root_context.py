@@ -5,6 +5,7 @@ from mitmproxy.proxy import protocol
 from mitmproxy.proxy import modes
 from mitmproxy.proxy.protocol import http
 
+from mitmproxy.proxy import selfc
 
 class RootContext:
 

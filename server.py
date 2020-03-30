@@ -14,6 +14,8 @@ from mitmproxy.net import tcp
 from mitmproxy.net.http import http1
 from mitmproxy.utils import human
 
+from mitmproxy.proxy import selfc
+
 
 class DummyServer:
     bound = False
