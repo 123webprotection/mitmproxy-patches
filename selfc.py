@@ -47,7 +47,8 @@ class SelfCShared:
             if pid > -1:
                 result = {"user": "ERROR", "path": "ERROR", "pid": pid}
                 proc = psutil.Process(pid)
-                result = {"user": proc.username(), "path": proc.exe(), "pid": pid}
+                cmdline = "" # Future:  " " + " ".join(proc.cmdline())
+                result = {"user": proc.username(), "path": proc.exe() + cmdline, "pid": pid}
             else:
                 print(SelfCShared.TcpTable.__dict__)
         except Exception as ex:
