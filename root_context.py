@@ -54,9 +54,10 @@ class RootContext:
         is_filtered = False
         
         if True: #self.config.check_filter:
-            is_filtered = ( self.config.check_filter(top_layer.server_conn.address) 
-                          or 
-                          selfc.SelfCShared.isTrusted(top_layer.server_conn.address[0]) )
+            if not top_layer.server_conn.address is None:
+                is_filtered = ( self.config.check_filter(top_layer.server_conn.address) 
+                              or 
+                              selfc.SelfCShared.isTrusted(top_layer.server_conn.address[0]) )
             if is_filtered:
                 skipped_url = top_layer.server_conn.address[0];
             
@@ -67,7 +68,8 @@ class RootContext:
                     self.log("Cannot parse Client Hello: %s" % repr(e), "error")
                 else:
                     sni_str = client_hello.sni and client_hello.sni.decode("idna")
-                    is_filtered = self.config.check_filter((sni_str, 443)) or selfc.SelfCShared.isTrusted(sni_str)
+                    if not sni_str is None:
+                        is_filtered = self.config.check_filter((sni_str, 443)) or selfc.SelfCShared.isTrusted(sni_str)
                     if is_filtered:
                         skipped_url = sni_str;
             if is_filtered:
